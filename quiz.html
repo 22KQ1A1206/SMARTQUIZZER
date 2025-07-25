@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SmartQuizzer Quiz 🎓💡</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to right, #00c9ff, #92fe9d);
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .quiz-container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+    .question {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    .options label {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+  padding: 10px 15px;
+  border-radius: 10px;
+  background-color: #f1f1f1;
+  cursor: pointer;
+  border: 1px solid #ccc;
+}
+
+.form-check-input {
+  margin-right: 10px;
+}
+
+    
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .score-box {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 1.5rem;
+      color: green;
+      font-weight: bold;
+    }
+    #timer {
+      font-weight: bold;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container">
+  <h2 class="text-center">SmartQuizzer 🎓💡</h2>
+  <div id="languageName" class="text-center text-primary mb-3"></div>
+  <div id="questionCount"></div>
+  <div id="timer">Time Left: <span id="time">15</span> seconds</div>
+  <div class="question" id="questionText"></div>
+  <div class="options" id="optionsBox"></div>
+
+  <div class="buttons">
+    <button class="btn btn-secondary" onclick="prevQuestion()">Previous</button>
+    <button class="btn btn-primary" onclick="nextQuestion()">Next</button>
+    <button class="btn btn-success" onclick="submitQuiz()">Submit</button>
+  </div>
+
+  <div id="scoreBox" class="score-box"></div>
+</div>
+
+<script>
+const allQuestions = {
+  javascript: [
+    {
+      question: "What does 'let' do in JavaScript?",
+      options: ["Declare variable", "Loop", "Condition", "None"],
+      answer: "Declare variable"
+    },
+    {
+    question: "Which keyword is used to declare a variable in JavaScript?",
+    options: ["int", "var", "let", "string"],
+    answer: "let"
+  },
+  {
+    question: "What symbol is used for single-line comments in JavaScript?",
+    options: ["//", "/*", "#", "<!--"],
+    answer: "//"
+  },
+  {
+    question: "Which company developed JavaScript?",
+    options: ["Microsoft", "Netscape", "Google", "Oracle"],
+    answer: "Netscape"
+  },
+  {
+    question: "How do you write 'Hello World' in an alert box?",
+    options: [
+      "msgBox('Hello World');",
+      "alert('Hello World');",
+      "msg('Hello World');",
+      "prompt('Hello World');"
+    ],
+    answer: "alert('Hello World');"
+  },
+  {
+    question: "What does DOM stand for?",
+    options: [
+      "Document Object Model",
+      "Data Object Model",
+      "Desktop Oriented Mode",
+      "Document Oriented Machine"
+    ],
+    answer: "Document Object Model"
+  },
+  {
+    question: "How do you create a function in JavaScript?",
+    options: [
+      "function = myFunc()",
+      "def myFunc()",
+      "function myFunc()",
+      "create myFunc()"
+    ],
+    answer: "function myFunc()"
+  },
+  {
+    question: "Which operator is used to assign a value?",
+    options: ["=", "==", "===", ":"],
+    answer: "="
+  },
+  {
+    question: "Which built-in method returns the length of a string?",
+    options: ["length()", "size()", "count()", "length"],
+    answer: "length"
+  },
+  {
+    question: "Which of the following is a correct if statement?",
+    options: [
+      "if i = 5 then",
+      "if (i == 5)",
+      "if i == 5",
+      "if i = 5"
+    ],
+    answer: "if (i == 5)"
+  },
+  {
+    question: "How can you convert a string to an integer in JavaScript?",
+    options: ["parseInt()", "parse()", "int()", "stringToInt()"],
+    answer: "parseInt()"
+  }
+  ],
+  java: [
+    {
+      question: "Which is not a primitive in Java?",
+      options: ["int", "float", "string", "boolean"],
+      answer: "string"
+    },
+    {
+    question: "Which of these is not a primitive data type in Java?",
+    options: ["int", "boolean", "String", "double"],
+    answer: "String"
+  },
+  {
+    question: "What is the extension of Java bytecode files?",
+    options: [".java", ".class", ".exe", ".jar"],
+    answer: ".class"
+  },
+  {
+    question: "Which keyword is used to create a class in Java?",
+    options: ["define", "class", "struct", "object"],
+    answer: "class"
+  },
+  {
+    question: "Java is a:",
+    options: ["Low-level language", "Assembly language", "High-level language", "Markup language"],
+    answer: "High-level language"
+  },
+  {
+    question: "Which method is the entry point of any Java program?",
+    options: ["start()", "main()", "run()", "init()"],
+    answer: "main()"
+  },
+  {
+    question: "Which symbol is used to end a statement in Java?",
+    options: [";", ":", ".", ","],
+    answer: ";"
+  },
+  {
+    question: "What does JVM stand for?",
+    options: [
+      "Java Virtual Machine",
+      "Java Variable Method",
+      "Java Verified Mode",
+      "Java Very Much"
+    ],
+    answer: "Java Virtual Machine"
+  },
+  {
+    question: "Which of the following is not a Java access modifier?",
+    options: ["public", "private", "protected", "package"],
+    answer: "package"
+  },
+  {
+    question: "Which keyword is used to inherit a class?",
+    options: ["extends", "implements", "inherits", "super"],
+    answer: "extends"
+  },
+  {
+    question: "Which operator is used to compare two values?",
+    options: ["=", "==", "!=", "equals"],
+    answer: "=="
+  }
+  ],
+  html: [
+    {
+      question: "HTML stands for?",
+      options: ["Hyper Tool Markup", "Hyper Text Markup Language", "High Text Machine Language", "None"],
+      answer: "Hyper Text Markup Language"
+    },
+      {
+    question: "What does HTML stand for?",
+    options: [
+      "Hyper Text Markup Language",
+      "Home Tool Markup Language",
+      "Hyperlinks and Text Markup Language",
+      "Highlevel Text Mark Language"
+    ],
+    answer: "Hyper Text Markup Language"
+  },
+  {
+  question: "Which tag is used to create a line break?",
+  options: ["&lt;br&gt;", "&lt;lb&gt;", "&lt;break&gt;", "&lt;newline&gt;"],
+  answer: "&lt;br&gt;"
+}
+,
+  {
+  question: "Which HTML element is used to define a paragraph?",
+  options: ["&lt;p&gt;", "&lt;para&gt;", "&lt;paragraph&gt;", "&lt;pg&gt;"],
+  answer: "&lt;p&gt;"
+}
+,
+  {
+  question: "How can you make a numbered list in HTML?",
+  options: ["&lt;ol&gt;", "&lt;ul&gt;", "&lt;dl&gt;", "&lt;list&gt;"],
+  answer: "&lt;ol&gt;"
+}
+,
+  {
+  question: "Which HTML tag is used to insert an image?",
+  options: ["&lt;img&gt;", "&lt;image&gt;", "&lt;src&gt;", "&lt;pic&gt;"],
+  answer: "&lt;img&gt;"
+}
+,
+  {
+    question: "What is the correct HTML for creating a hyperlink?",
+    options: [
+      "<a>http://example.com</a>",
+      "<a href='http://example.com'>Link</a>",
+      "<link>example.com</link>",
+      "<href>http://example.com</href>"
+    ],
+    answer: "<a href='http://example.com'>Link</a>"
+  },
+  {
+    question: "Which attribute is used to provide an alternate text for an image?",
+    options: ["title", "alt", "src", "href"],
+    answer: "alt"
+  },
+  {
+    question: "HTML files must have which file extension?",
+    options: [".xml", ".html", ".txt", ".doc"],
+    answer: ".html"
+  },
+  {
+  question: "Which tag is used to create a line break?",
+  options: ["&lt;br&gt;", "&lt;lb&gt;", "&lt;break&gt;", "&lt;newline&gt;"],
+  answer: "&lt;br&gt;"
+}
+,
+  {
+    question: "What does the <title> tag define?",
+    options: [
+      "The title of the document",
+      "A heading in the page",
+      "The main content area",
+      "The name of the image"
+    ],
+    answer: "The title of the document"
+  }
+  ],
+  python: [
+    {
+      question: "What keyword is used to define a function in Python?",
+      options: ["func", "function", "def", "define"],
+      answer: "def"
+    },
+    {
+    question: "What is the correct file extension for Python files?",
+    options: [".pt", ".py", ".pyt", ".python"],
+    answer: ".py"
+  },
+  {
+    question: "Which keyword is used to define a function in Python?",
+    options: ["function", "def", "fun", "define"],
+    answer: "def"
+  },
+  {
+  question: "How do you insert comments in Python code?",
+  options: ["// comment", "&lt;!-- comment --&gt;", "# comment", "/* comment */"],
+  answer: "# comment"
+}
+,
+  {
+    question: "Which operator is used for exponentiation in Python?",
+    options: ["^", "**", "//", "^^"],
+    answer: "**"
+  },
+  {
+    question: "Which data type is used to store True or False values?",
+    options: ["int", "str", "bool", "float"],
+    answer: "bool"
+  },
+  {
+    question: "Which keyword is used for loops in Python?",
+    options: ["loop", "iterate", "for", "repeat"],
+    answer: "for"
+  },
+  {
+    question: "Which function is used to get input from the user?",
+    options: ["input()", "scan()", "get()", "read()"],
+    answer: "input()"
+  },
+  {
+    question: "How do you start an if statement in Python?",
+    options: ["if x > y then", "if x > y:", "if (x > y)", "when x > y:"],
+    answer: "if x > y:"
+  },
+  {
+  question: "What will `print(type(5))` output?",
+  options: ["int", "&lt;class 'int'&gt;", "number", "data-type"],
+  answer: "&lt;class 'int'&gt;"
+}
+,
+  {
+    question: "Which of the following is a valid variable name?",
+    options: ["2num", "num_2", "num-2", "num 2"],
+    answer: "num_2"
+  }
+  ],
+  c: [
+    {
+      question: "Which symbol ends a statement in C?",
+      options: [";", ".", ":", "/"],
+      answer: ";"
+    },
+      {
+    question: "Which symbol is used to end a statement in C?",
+    options: [";", ":", ".", ","],
+    answer: ";"
+  },
+  {
+    question: "Which data type is used to store integers in C?",
+    options: ["float", "char", "int", "string"],
+    answer: "int"
+  },
+  {
+    question: "What is the extension of a C language file?",
+    options: [".java", ".cpp", ".c", ".py"],
+    answer: ".c"
+  },
+  {
+    question: "Which function is used to output to the screen in C?",
+    options: ["printf()", "cin", "cout", "echo"],
+    answer: "printf()"
+  },
+  {
+    question: "Which function is used to take input in C?",
+    options: ["input()", "scanf()", "cin", "read()"],
+    answer: "scanf()"
+  },
+  {
+    question: "Which of the following is a correct variable name in C?",
+    options: ["2value", "value_2", "value-2", "value 2"],
+    answer: "value_2"
+  },
+  {
+    question: "Which keyword is used to create a loop in C?",
+    options: ["loop", "repeat", "for", "iterate"],
+    answer: "for"
+  },
+  {
+    question: "What is the starting point of a C program?",
+    options: ["start()", "begin()", "main()", "run()"],
+    answer: "main()"
+  },
+  {
+    question: "What is used to comment a single line in C?",
+    options: ["//", "#", "/* */", "--"],
+    answer: "//"
+  },
+ {
+  question: "Which header file is required for printf()?",
+  options: ["&lt;conio.h&gt;", "&lt;stdio.h&gt;", "&lt;math.h&gt;", "&lt;string.h&gt;"],
+  answer: "&lt;stdio.h&gt;"
+}
+
+  ],
+  cpp: [
+    {
+      question: "C++ is:",
+      options: ["Low-level", "Assembly", "Object Oriented", "None"],
+      answer: "Object Oriented"
+    },
+     {
+    question: "C++ is an extension of which programming language?",
+    options: ["C", "Java", "Python", "Ruby"],
+    answer: "C"
+  },
+  {
+    question: "What is the correct file extension for C++ files?",
+    options: [".cp", ".cplus", ".cpp", ".cxx"],
+    answer: ".cpp"
+  },
+  {
+    question: "Which operator is used to access members of a class in C++?",
+    options: [".", ":", "::", "->"],
+    answer: "."
+  },
+  {
+    question: "Which keyword is used to define a class in C++?",
+    options: ["struct", "define", "class", "object"],
+    answer: "class"
+  },
+  {
+  question: "What is the correct way to declare a comment in C++?",
+  options: ["/* comment */", "&lt;!-- comment --&gt;", "// comment", "# comment"],
+  answer: "// comment"
+}
+,
+  {
+    question: "Which concept allows the same function to have different meanings?",
+    options: ["Inheritance", "Encapsulation", "Polymorphism", "Abstraction"],
+    answer: "Polymorphism"
+  },
+  {
+    question: "Which function is the entry point of any C++ program?",
+    options: ["start()", "main()", "execute()", "init()"],
+    answer: "main()"
+  },
+  {
+    question: "What is used to allocate memory dynamically in C++?",
+    options: ["alloc", "new", "malloc", "init"],
+    answer: "new"
+  },
+  {
+    question: "Which of the following is a correct way to create an object?",
+    options: ["Car myCar();", "Car = myCar;", "object Car;", "Car myCar;"],
+    answer: "Car myCar;"
+  },
+  {
+    question: "Which keyword is used to inherit a class in C++?",
+    options: ["extends", "inherits", "base", "public"],
+    answer: "public"
+  }
+  ]
+};
+
+let language = localStorage.getItem("selectedLanguage") || "javascript";
+let quiz = allQuestions[language.toLowerCase()] || [];
+let currentQ = 0;
+let score = 0;
+let answers = [];
+let timer;
+let timeLeft = 15;
+
+document.getElementById("languageName").innerText = `Language: ${language.toUpperCase()}`;
+
+function loadQuestion() {
+  clearInterval(timer);
+  timeLeft = 15;
+  document.getElementById("time").innerText = timeLeft;
+  timer = setInterval(countdown, 1000);
+
+  const q = quiz[currentQ];
+  document.getElementById("questionCount").innerText = `Question ${currentQ + 1} of ${quiz.length}`;
+  document.getElementById("questionText").innerText = q.question;
+  const optionsBox = document.getElementById("optionsBox");
+  optionsBox.innerHTML = "";
+
+  q.options.forEach(opt => {
+    const label = document.createElement("label");
+    label.innerHTML = `<input type="radio" class="form-check-input me-2" name="option" value="${opt}" onchange="selectOption('${opt}')"> ${opt}`;
+
+    optionsBox.appendChild(label);
+  });
+
+  if (answers[currentQ]) {
+    const radios = document.getElementsByName("option");
+    radios.forEach(r => {
+      if (r.value === answers[currentQ]) r.checked = true;
+    });
+  }
+}
+
+function countdown() {
+  timeLeft--;
+  document.getElementById("time").innerText = timeLeft;
+  if (timeLeft <= 0) {
+    nextQuestion();
+  }
+}
+
+function selectOption(opt) {
+  answers[currentQ] = opt;
+}
+
+function nextQuestion() {
+  if (currentQ < quiz.length - 1) {
+    currentQ++;
+    loadQuestion();
+  } else {
+    submitQuiz();
+  }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) {
+    currentQ--;
+    loadQuestion();
+  }
+}
+
+function submitQuiz() {
+  clearInterval(timer);
+  score = 0;
+  quiz.forEach((q, i) => {
+    if (answers[i] === q.answer) score++;
+  });
+
+  // Save score and answers for review page
+  localStorage.setItem("quizScore", `${score} / ${quiz.length}`);
+  localStorage.setItem("quizAnswers", JSON.stringify(answers));
+  localStorage.setItem("quizQuestions", JSON.stringify(quiz));
+
+  // Redirect to c.html
+  window.location.href = "c.html";
+}
+
+
+loadQuestion();
+</script>
+
+</body>
+</html>
